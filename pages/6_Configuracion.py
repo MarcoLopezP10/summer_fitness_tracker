@@ -1,10 +1,8 @@
 import streamlit as st
 
+from src.auth import auth_enabled, logout
 from src.services import get_body_weight_entries, get_dashboard_summary, get_training_types, get_workout_history_summary
-from src.ui import apply_base_styles, render_html, render_page_header, render_quick_action_card, render_section_label, type_color
-
-
-apply_base_styles()
+from src.ui import icon_svg, render_html, render_page_header, render_quick_action_card, render_section_label, type_color
 
 summary = {}
 training_types = []
@@ -34,9 +32,7 @@ def _project_card():
         <div class="ft-card">
             <div style="display:flex; gap:0.9rem; align-items:flex-start;">
                 <div style="width:56px; height:56px; border-radius:18px; background:#fce8e1; display:flex; align-items:center; justify-content:center; color:#E26A4A;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 3c1 4 5 5 5 10a5 5 0 11-10 0c0-3 2-3 2-6 1 1 3 1 3-4z"></path>
-                    </svg>
+                    {icon_svg("fire", size=24, color="#E26A4A")}
                 </div>
                 <div style="flex:1;">
                     <div class="ft-row-title" style="font-size:1.45rem;">fitness_tracker</div>
@@ -88,6 +84,11 @@ def _settings_detail():
         """
     )
 
+    if auth_enabled():
+        if st.button("Cerrar sesión", use_container_width=True, key="config_logout_button"):
+            logout()
+            st.rerun()
+
 
 def _more_hub():
     render_page_header("Más", f"{total_workouts} entrenamientos · {total_exercises} ejercicios")
@@ -96,28 +97,28 @@ def _more_hub():
         "Ejercicios",
         f"{total_exercises} en catálogo",
         "#3DA37A",
-        '<span style="font-size:1.2rem; line-height:1;">🏋</span>',
+        icon_svg("exercise", size=22, color="#3DA37A"),
         "ejercicios",
     )
     render_quick_action_card(
         "Peso corporal",
         f"{len(body_weights)} registros",
         "#3A82C4",
-        '<span style="font-size:1.2rem; line-height:1;">⚖</span>',
+        icon_svg("weight", size=22, color="#3A82C4"),
         "peso",
     )
     render_quick_action_card(
         "Progresión",
         "Evolución por ejercicio",
         "#7B5CD6",
-        '<span style="font-size:1.15rem; line-height:1;">↗</span>',
+        icon_svg("chart", size=22, color="#7B5CD6"),
         "progresion",
     )
     render_quick_action_card(
         "Configuración",
         "Tipos, info y métricas",
         "#8A8378",
-        '<span style="font-size:1.15rem; line-height:1;">⚙</span>',
+        icon_svg("settings", size=22, color="#8A8378"),
         "configuracion",
     )
 

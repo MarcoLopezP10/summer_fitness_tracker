@@ -14,7 +14,7 @@ from src.services import (
     get_training_types,
     get_workout_detail,
 )
-from src.ui import apply_base_styles, render_html, render_page_header, render_section_label, render_type_pills, type_color
+from src.ui import render_html, render_page_header, render_section_label, render_type_pills, type_color
 from src.utils import safe_float, safe_int, validate_set_data
 
 

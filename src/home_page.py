@@ -13,7 +13,7 @@ from src.ui import (
     PRIMARY,
     SUCCESS,
     TRAINING_TYPE_COLORS,
-    apply_base_styles,
+    icon_svg,
     render_distribution_bar,
     render_html,
     render_workout_list_card,
@@ -58,8 +58,6 @@ def _distribution_from_history(rows: list[dict]) -> list[tuple[str, float]]:
 
 
 def render():
-    apply_base_styles()
-
     summary = {}
     history_rows = []
     body_weights = []
@@ -157,7 +155,7 @@ def render():
             "Registrar peso",
             "Añadir registro",
             "#3A82C4",
-            '<span style="font-size:1.15rem; line-height:1;">⚖</span>',
+            icon_svg("weight", size=20, color="#3A82C4"),
             "peso",
         )
     with quick2:
@@ -165,7 +163,7 @@ def render():
             "Nuevo ejercicio",
             "Crear en catálogo",
             SUCCESS,
-            '<span style="font-size:1.15rem; line-height:1;">🏋</span>',
+            icon_svg("exercise", size=20, color=SUCCESS),
             "ejercicios",
         )
 

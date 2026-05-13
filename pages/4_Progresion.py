@@ -9,7 +9,7 @@ from src.charts import (
     plot_exercise_volume,
 )
 from src.services import get_exercise_progress, get_exercise_progress_insights, get_exercises
-from src.ui import apply_base_styles, render_html, render_page_header, render_section_label
+from src.ui import render_html, render_page_header, render_section_label
 from src.utils import build_progress_dataframe, format_date
 
 
@@ -46,8 +46,6 @@ def _delta_text(current, previous, suffix: str = ""):
     sign = "+" if diff > 0 else ""
     return f"{sign}{diff:.1f}{suffix} ({sign}{pct:.1f}%)"
 
-
-apply_base_styles()
 
 try:
     exercises = get_exercises()

@@ -11,7 +11,7 @@ st.set_page_config(
     page_title="Fitness Tracker",
     page_icon="🏋️",
     layout="centered",
-    initial_sidebar_state="collapsed",
+    initial_sidebar_state="expanded",
 )
 
 
@@ -44,10 +44,18 @@ if current_view not in PAGE_MAP:
     st.query_params["view"] = "principal"
 
 apply_base_styles()
-nav_view = "mas" if current_view == "configuracion" else current_view
-render_navigation(nav_view)
 
-if current_view == "principal":
-    render_home()
-else:
-    runpy.run_path(str(PAGE_MAP[current_view]), run_name="__main__")
+nav_view = "mas" if current_view == "configuracion" else current_view
+nav_col, content_col = st.columns([1.15, 4], gap="large")
+
+with nav_col:
+    selected_view = render_navigation(nav_view)
+    if selected_view != nav_view:
+        st.query_params["view"] = selected_view
+        st.rerun()
+
+with content_col:
+    if current_view == "principal":
+        render_home()
+    else:
+        runpy.run_path(str(PAGE_MAP[current_view]), run_name="__main__")

@@ -2,7 +2,7 @@ import pandas as pd
 import streamlit as st
 
 from src.services import get_training_types, get_workout_detail, get_workout_history_summary
-from src.ui import apply_base_styles, render_html, render_page_header, render_section_label, render_type_pills, render_workout_list_card
+from src.ui import render_html, render_page_header, render_section_label, render_type_pills, render_workout_list_card
 from src.utils import format_date
 
 
@@ -34,7 +34,6 @@ def _metric_pill(label: str, value: str):
     )
 
 
-apply_base_styles()
 render_page_header("Historial", "Tus sesiones agrupadas para revisarlas rápido y con contexto.")
 
 try:

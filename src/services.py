@@ -14,7 +14,7 @@ def _clear_cached_reads() -> None:
     st.cache_data.clear()
 
 
-@st.cache_data(show_spinner=False, ttl=30)
+@st.cache_data(show_spinner=False, ttl=120)
 def _get_workout_aggregate_map(workout_ids: tuple[str, ...]) -> dict[str, dict[str, Any]]:
     if not workout_ids:
         return {}
@@ -82,7 +82,7 @@ def _get_workout_aggregate_map(workout_ids: tuple[str, ...]) -> dict[str, dict[s
     return aggregates
 
 
-@st.cache_data(show_spinner=False, ttl=30)
+@st.cache_data(show_spinner=False, ttl=120)
 def get_training_types() -> list[dict]:
     response = (
         get_supabase_client()
@@ -105,7 +105,7 @@ def create_exercise(name: str, default_training_type_id: str | None = None, note
     return (response.data or [None])[0]
 
 
-@st.cache_data(show_spinner=False, ttl=30)
+@st.cache_data(show_spinner=False, ttl=120)
 def get_exercises(default_training_type_id: str | None = None) -> list[dict]:
     query = (
         get_supabase_client()
@@ -153,7 +153,7 @@ def update_workout(workout_id: str, name: str, workout_date: str, notes: str | N
     return (response.data or [None])[0]
 
 
-@st.cache_data(show_spinner=False, ttl=30)
+@st.cache_data(show_spinner=False, ttl=120)
 def get_workouts(limit: int | None = None) -> list[dict]:
     query = (
         get_supabase_client()
@@ -430,7 +430,7 @@ def move_workout_exercise(workout_id: str, workout_exercise_id: str, direction: 
     _clear_cached_reads()
 
 
-@st.cache_data(show_spinner=False, ttl=30)
+@st.cache_data(show_spinner=False, ttl=120)
 def get_workout_detail(workout_id: str) -> dict[str, Any]:
     workout_response = (
         get_supabase_client()
@@ -452,7 +452,7 @@ def get_workout_detail(workout_id: str) -> dict[str, Any]:
     return workout
 
 
-@st.cache_data(show_spinner=False, ttl=30)
+@st.cache_data(show_spinner=False, ttl=120)
 def get_exercise_progress(exercise_id: str) -> list[dict]:
     response = (
         get_supabase_client()
@@ -526,7 +526,7 @@ def get_exercise_progress(exercise_id: str) -> list[dict]:
     return grouped.to_dict(orient="records")
 
 
-@st.cache_data(show_spinner=False, ttl=30)
+@st.cache_data(show_spinner=False, ttl=120)
 def get_recent_workout_summaries(limit: int = 6) -> list[dict]:
     workouts = get_workouts(limit=limit)
     aggregate_map = _get_workout_aggregate_map(tuple(workout["id"] for workout in workouts))
@@ -547,7 +547,7 @@ def get_recent_workout_summaries(limit: int = 6) -> list[dict]:
     return summaries
 
 
-@st.cache_data(show_spinner=False, ttl=30)
+@st.cache_data(show_spinner=False, ttl=120)
 def get_workout_history_summary() -> list[dict]:
     workouts = get_workouts()
     aggregate_map = _get_workout_aggregate_map(tuple(workout["id"] for workout in workouts))
@@ -570,7 +570,7 @@ def get_workout_history_summary() -> list[dict]:
     return rows
 
 
-@st.cache_data(show_spinner=False, ttl=30)
+@st.cache_data(show_spinner=False, ttl=120)
 def get_exercise_progress_insights(exercise_id: str) -> dict[str, Any]:
     rows = get_exercise_progress(exercise_id)
     df = pd.DataFrame(rows)
@@ -622,7 +622,7 @@ def add_body_weight(entry_date: str, weight: float, notes: str | None = None) ->
     return (response.data or [None])[0]
 
 
-@st.cache_data(show_spinner=False, ttl=30)
+@st.cache_data(show_spinner=False, ttl=120)
 def get_body_weight_entries() -> list[dict]:
     response = (
         get_supabase_client()
@@ -634,7 +634,7 @@ def get_body_weight_entries() -> list[dict]:
     return response.data or []
 
 
-@st.cache_data(show_spinner=False, ttl=30)
+@st.cache_data(show_spinner=False, ttl=120)
 def get_dashboard_summary() -> dict[str, Any]:
     workouts = get_workouts()
     exercises = get_exercises()

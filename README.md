@@ -42,6 +42,7 @@ pip install -r requirements.txt
 4. Ejecuta despues el archivo `sql/002_seed_training_types.sql`.
 5. Ejecuta despues `sql/003_seed_demo_exercises.sql` si quieres cargar ejercicios de ejemplo.
 6. Si quieres usar edicion y borrado desde la app, ejecuta tambien `sql/004_enable_update_delete_policies.sql`.
+7. Si quieres activar login real con Supabase Auth y cerrar el acceso publico, ejecuta tambien `sql/005_require_authenticated_policies.sql`.
 
 ## 4. Configurar secrets de Streamlit
 
@@ -60,7 +61,13 @@ SUPABASE_KEY="TU_SUPABASE_KEY"
 
 Tambien se incluyen claves `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` en el ejemplo para mantener compatibilidad con otros entornos, pero la aplicacion usa `SUPABASE_URL` y `SUPABASE_KEY`.
 
-## 5. Ejecutar la app
+## 5. Crear tu usuario en Supabase Auth
+
+1. Ve a `Authentication > Users` en Supabase.
+2. Crea un usuario con tu email y contraseña.
+3. Si has ejecutado `sql/005_require_authenticated_policies.sql`, la app pedira login con ese usuario y solo usuarios autenticados podran acceder a los datos.
+
+## 6. Ejecutar la app
 
 ```bash
 streamlit run app.py
@@ -80,7 +87,8 @@ summer_fitness_tracker/
 │   ├── 001_create_tables.sql
 │   └── 002_seed_training_types.sql
 │   ├── 003_seed_demo_exercises.sql
-│   └── 004_enable_update_delete_policies.sql
+│   ├── 004_enable_update_delete_policies.sql
+│   └── 005_require_authenticated_policies.sql
 ├── src/
 │   ├── __init__.py
 │   ├── supabase_client.py

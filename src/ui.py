@@ -36,6 +36,67 @@ def render_html(markup: str):
         st.markdown(cleaned, unsafe_allow_html=True)
 
 
+def icon_svg(name: str, *, size: int = 22, color: str = "currentColor") -> str:
+    icons = {
+        "home": f"""
+        <svg class="icon" width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="{color}" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 10.8 12 4l8 6.8"></path>
+            <path d="M6.5 10.5V20h4.5v-4.5h2V20h4.5v-9.5"></path>
+        </svg>
+        """,
+        "list": f"""
+        <svg class="icon" width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="{color}" stroke-width="2.1" stroke-linecap="round">
+            <path d="M6 7h12"></path>
+            <path d="M6 12h12"></path>
+            <path d="M6 17h12"></path>
+        </svg>
+        """,
+        "chart": f"""
+        <svg class="icon" width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="{color}" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 20V6"></path>
+            <path d="M4 20h16"></path>
+            <path d="m8 15 3-3 3 2 4-6"></path>
+        </svg>
+        """,
+        "more": f"""
+        <svg class="icon" width="{size}" height="{size}" viewBox="0 0 24 24" fill="{color}">
+            <circle cx="6" cy="12" r="1.8"></circle>
+            <circle cx="12" cy="12" r="1.8"></circle>
+            <circle cx="18" cy="12" r="1.8"></circle>
+        </svg>
+        """,
+        "exercise": f"""
+        <svg class="icon" width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="{color}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 10v4"></path>
+            <path d="M6 8v8"></path>
+            <path d="M18 8v8"></path>
+            <path d="M21 10v4"></path>
+            <path d="M6 12h12"></path>
+        </svg>
+        """,
+        "weight": f"""
+        <svg class="icon" width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="{color}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 7a2 2 0 1 0 0 4a2 2 0 0 0 0-4Z"></path>
+            <path d="M9.5 17.5 11 13l-1.5-2"></path>
+            <path d="M14.5 17.5 13 13l1.5-2"></path>
+            <path d="M11 13h2"></path>
+        </svg>
+        """,
+        "settings": f"""
+        <svg class="icon" width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="{color}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 8.5a3.5 3.5 0 1 0 0 7a3.5 3.5 0 0 0 0-7Z"></path>
+            <path d="M19.4 15a1 1 0 0 0 .2 1.1l.1.1a2 2 0 0 1-2.8 2.8l-.1-.1a1 1 0 0 0-1.1-.2a1 1 0 0 0-.6.9V20a2 2 0 0 1-4 0v-.2a1 1 0 0 0-.6-.9a1 1 0 0 0-1.1.2l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1 1 0 0 0 .2-1.1a1 1 0 0 0-.9-.6H4a2 2 0 0 1 0-4h.2a1 1 0 0 0 .9-.6a1 1 0 0 0-.2-1.1l-.1-.1a2 2 0 0 1 2.8-2.8l.1.1a1 1 0 0 0 1.1.2a1 1 0 0 0 .6-.9V4a2 2 0 0 1 4 0v.2a1 1 0 0 0 .6.9a1 1 0 0 0 1.1-.2l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1 1 0 0 0-.2 1.1a1 1 0 0 0 .9.6H20a2 2 0 0 1 0 4h-.2a1 1 0 0 0-.9.6Z"></path>
+        </svg>
+        """,
+        "fire": f"""
+        <svg class="icon" width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="{color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3c1 4 5 5 5 10a5 5 0 1 1-10 0c0-3 2-3 2-6c1 1 3 1 3-4Z"></path>
+        </svg>
+        """,
+    }
+    return _html(icons[name])
+
+
 def apply_base_styles():
     render_html(
         f"""
@@ -57,17 +118,26 @@ def apply_base_styles():
             color: var(--ft-text);
             font-variant-numeric: tabular-nums;
         }}
-        [data-testid="stSidebar"] {{
+        [data-testid="stToolbar"] {{
             display: none;
+        }}
+        header[data-testid="stHeader"] {{
+            background: transparent;
+        }}
+        [data-testid="stSidebar"] {{
+            background: rgba(255,255,255,0.72);
+            border-right: 1px solid rgba(31, 27, 22, 0.08);
+        }}
+        [data-testid="stSidebar"] > div:first-child {{
+            background: rgba(255,255,255,0.72);
         }}
         [data-testid="stSidebarNav"] {{
             display: none;
         }}
         [data-testid="collapsedControl"] {{
-            display: none;
-        }}
-        header[data-testid="stHeader"] {{
-            background: transparent;
+            color: var(--ft-text) !important;
+            display: none !important;
+            visibility: hidden !important;
         }}
         .block-container {{
             max-width: 860px;
@@ -77,7 +147,7 @@ def apply_base_styles():
         @media (max-width: 768px) {{
             .block-container {{
                 max-width: 100%;
-                padding: 0.8rem 0.85rem 6.4rem 0.85rem;
+                padding: 0.65rem 0.82rem 6.9rem 0.82rem;
             }}
         }}
         .ft-page-head {{
@@ -364,79 +434,6 @@ def apply_base_styles():
             color: white;
             box-shadow: 0 10px 25px rgba(226, 106, 74, 0.28);
         }}
-        .ft-bottom-nav {{
-            position: fixed;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 9999;
-            display: flex;
-            justify-content: center;
-            pointer-events: none;
-        }}
-        .ft-bottom-shell {{
-            width: min(calc(100% - 0.8rem), 520px);
-            margin: 0 auto;
-            background: rgba(255,255,255,0.98);
-            border-top: 1px solid rgba(31, 27, 22, 0.08);
-            box-shadow: 0 -12px 30px rgba(58, 40, 20, 0.08);
-            border-radius: 26px 26px 0 0;
-            padding: 0.55rem 0.85rem calc(0.75rem + env(safe-area-inset-bottom, 0px)) 0.85rem;
-            pointer-events: auto;
-        }}
-        .ft-bottom-grid {{
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 0.1rem;
-            align-items: end;
-        }}
-        .ft-nav-item {{
-            text-decoration: none;
-            color: #9a8f84;
-            text-align: center;
-            font-size: 0.78rem;
-            font-weight: 600;
-            padding: 0.15rem 0 0.05rem;
-            line-height: 1.1;
-        }}
-        .ft-nav-item .icon,
-        .ft-nav-glyph {{
-            display: block;
-            margin: 0 auto 0.18rem auto;
-            color: currentColor;
-        }}
-        .ft-nav-glyph {{
-            font-size: 1.18rem;
-            font-weight: 700;
-            line-height: 1;
-            width: 22px;
-            height: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }}
-        .ft-nav-item.active {{
-            color: var(--ft-primary);
-        }}
-        .ft-nav-add {{
-            width: 68px;
-            height: 68px;
-            border-radius: 50%;
-            background: var(--ft-primary);
-            color: white !important;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: -1.9rem auto 0 auto;
-            box-shadow: 0 16px 30px rgba(226, 106, 74, 0.35);
-            font-size: 2rem !important;
-            text-decoration: none;
-            border: 5px solid rgba(255,255,255,0.96);
-        }}
-        .ft-nav-add span {{
-            line-height: 1;
-            transform: translateY(-1px);
-        }}
         .ft-quick-card {{
             display:flex;
             align-items:center;
@@ -445,14 +442,13 @@ def apply_base_styles():
             color:inherit;
         }}
         .ft-quick-icon {{
-            width:44px;
-            height:44px;
+            width:46px;
+            height:46px;
             border-radius:14px;
             display:flex;
             align-items:center;
             justify-content:center;
             flex-shrink:0;
-            font-size:1.2rem;
             font-weight:700;
         }}
         .ft-quick-arrow {{
@@ -655,44 +651,29 @@ def render_distribution_bar(items: list[tuple[str, float]], total_label: str):
     )
 
 
-def render_navigation(current_view: str):
-    icon_map = {
-        "principal": '<span class="ft-nav-glyph">⌂</span>',
-        "historial": '<span class="ft-nav-glyph">≡</span>',
-        "progresion": '<span class="ft-nav-glyph">↗</span>',
-        "mas": '<span class="ft-nav-glyph">⋯</span>',
-    }
-    items = [
-        ("principal", "Resumen", icon_map["principal"]),
-        ("historial", "Historial", icon_map["historial"]),
-        ("nuevo", "", "+"),
-        ("progresion", "Progresión", icon_map["progresion"]),
-        ("mas", "Más", icon_map["mas"]),
+def render_navigation(current_view: str) -> str:
+    options = [
+        ("principal", "Principal"),
+        ("nuevo", "Nuevo entrenamiento"),
+        ("historial", "Historial"),
+        ("ejercicios", "Ejercicios"),
+        ("progresion", "Progresión"),
+        ("peso", "Peso corporal"),
+        ("mas", "Más"),
+        ("configuracion", "Configuración"),
     ]
+    keys = [key for key, _ in options]
+    labels = [label for _, label in options]
+    current_key = current_view if current_view in keys else "principal"
+    current_index = keys.index(current_key)
 
-    bottom_parts = []
-    for key, label, icon in items:
-        if key == "nuevo":
-            bottom_parts.append(f'<a class="ft-nav-add" target="_self" href="?view={key}"><span>{icon}</span></a>')
-        else:
-            bottom_parts.append(
-                _html(
-                    f"""
-                    <a class="ft-nav-item {'active' if key == current_view else ''}" target="_self" href="?view={key}">
-                        {icon}
-                        {label}
-                    </a>
-                    """
-                )
-            )
-    render_html(
-        f"""
-        <div class="ft-bottom-nav">
-            <div class="ft-bottom-shell">
-                <div class="ft-bottom-grid">
-                    {''.join(bottom_parts)}
-                </div>
-            </div>
-        </div>
-        """
-    )
+    with st.container(border=True):
+        st.markdown("### Menú")
+        selected_label = st.selectbox(
+            "Ir a",
+            labels,
+            index=current_index,
+            key=f"app_nav_value_{current_key}",
+            label_visibility="collapsed",
+        )
+    return keys[labels.index(selected_label)]

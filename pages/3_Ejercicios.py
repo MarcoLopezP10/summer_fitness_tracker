@@ -1,10 +1,8 @@
 import streamlit as st
 
 from src.services import create_exercise, get_exercises, get_training_types, get_workout_history_summary
-from src.ui import apply_base_styles, render_html, render_page_header, render_section_label, render_type_pills, type_color
+from src.ui import render_html, render_page_header, render_section_label, render_type_pills, type_color
 
-
-apply_base_styles()
 render_page_header("Ejercicios", "Crea tu biblioteca base y asigna un tipo por defecto solo si te ayuda a organizarte.")
 
 try:

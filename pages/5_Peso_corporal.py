@@ -5,11 +5,9 @@ import pandas as pd
 
 from src.charts import plot_body_weight
 from src.services import add_body_weight, get_body_weight_entries
-from src.ui import apply_base_styles, render_html, render_page_header, render_section_label
+from src.ui import render_html, render_page_header, render_section_label
 from src.utils import format_date
 
-
-apply_base_styles()
 render_page_header("Peso corporal", "Sigue la tendencia de tu peso y registra nuevas entradas cuando lo necesites.")
 
 if "show_weight_form" not in st.session_state:
