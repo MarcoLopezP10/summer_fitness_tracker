@@ -1,5 +1,6 @@
 from html import escape
 from textwrap import dedent
+from urllib.parse import quote
 
 import streamlit as st
 
@@ -34,6 +35,13 @@ def render_html(markup: str):
         st.html(cleaned)
     else:
         st.markdown(cleaned, unsafe_allow_html=True)
+
+
+def _svg_to_data_uri(svg_markup: str) -> str:
+    svg = _html(svg_markup)
+    if "xmlns=" not in svg:
+        svg = svg.replace("<svg ", '<svg xmlns="http://www.w3.org/2000/svg" ', 1)
+    return f"data:image/svg+xml;utf8,{quote(svg)}"
 
 
 def icon_svg(name: str, *, size: int = 22, color: str = "currentColor") -> str:
@@ -93,8 +101,16 @@ def icon_svg(name: str, *, size: int = 22, color: str = "currentColor") -> str:
             <path d="M12 3c1 4 5 5 5 10a5 5 0 1 1-10 0c0-3 2-3 2-6c1 1 3 1 3-4Z"></path>
         </svg>
         """,
+        "plus": f"""
+        <svg class="icon" width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="{color}" stroke-width="2.6" stroke-linecap="round">
+            <path d="M12 5v14"></path>
+            <path d="M5 12h14"></path>
+        </svg>
+        """,
     }
-    return _html(icons[name])
+    return _html(
+        f'<img alt="" src="{_svg_to_data_uri(icons[name])}" width="{size}" height="{size}" style="display:block;" />'
+    )
 
 
 def apply_base_styles():
@@ -108,6 +124,8 @@ def apply_base_styles():
             --ft-muted: {MUTED};
             --ft-primary: {PRIMARY};
             --ft-success: {SUCCESS};
+            --ft-surface-soft: rgba(255,255,255,0.76);
+            --ft-border: rgba(31, 27, 22, 0.08);
             --ft-radius-xl: 28px;
             --ft-radius-lg: 22px;
             --ft-radius-md: 18px;
@@ -117,6 +135,12 @@ def apply_base_styles():
             background: var(--ft-bg);
             color: var(--ft-text);
             font-variant-numeric: tabular-nums;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }}
+        [data-testid="stAppViewContainer"] {{
+            background-image:
+                radial-gradient(circle at top left, rgba(226,106,74,0.08), transparent 22rem),
+                radial-gradient(circle at bottom right, rgba(61,163,122,0.05), transparent 18rem);
         }}
         [data-testid="stToolbar"] {{
             display: none;
@@ -125,33 +149,28 @@ def apply_base_styles():
             background: transparent;
         }}
         [data-testid="stSidebar"] {{
-            background: rgba(255,255,255,0.72);
-            border-right: 1px solid rgba(31, 27, 22, 0.08);
-        }}
-        [data-testid="stSidebar"] > div:first-child {{
-            background: rgba(255,255,255,0.72);
-        }}
-        [data-testid="stSidebarNav"] {{
-            display: none;
-        }}
-        [data-testid="collapsedControl"] {{
-            color: var(--ft-text) !important;
             display: none !important;
-            visibility: hidden !important;
         }}
         .block-container {{
-            max-width: 860px;
-            padding-top: 0.95rem;
-            padding-bottom: 4rem;
+            max-width: 430px;
+            padding-top: 0.9rem;
+            padding-bottom: 7.2rem;
+            margin: 0 auto;
         }}
         @media (max-width: 768px) {{
             .block-container {{
                 max-width: 100%;
-                padding: 0.65rem 0.82rem 6.9rem 0.82rem;
+                padding: 0.8rem 0.85rem 7.5rem 0.85rem;
+            }}
+        }}
+        @media (min-width: 769px) {{
+            .block-container {{
+                padding-left: 0.9rem;
+                padding-right: 0.9rem;
             }}
         }}
         .ft-page-head {{
-            margin-bottom: 1.1rem;
+            margin-bottom: 1.3rem;
         }}
         .ft-kicker {{
             color: #8b7d70;
@@ -163,7 +182,7 @@ def apply_base_styles():
         }}
         .ft-title {{
             margin: 0;
-            font-size: clamp(2.3rem, 6vw, 4rem);
+            font-size: clamp(2.25rem, 5.6vw, 3.55rem);
             line-height: 0.98;
             letter-spacing: -0.045em;
             color: var(--ft-text);
@@ -173,10 +192,11 @@ def apply_base_styles():
             color: var(--ft-muted);
             font-size: clamp(1rem, 2.6vw, 1.18rem);
             line-height: 1.45;
+            max-width: 44rem;
         }}
         .ft-card {{
             background: var(--ft-surface);
-            border: 1px solid rgba(31, 27, 22, 0.06);
+            border: 1px solid var(--ft-border);
             border-radius: var(--ft-radius-lg);
             padding: 1rem 1.05rem;
             box-shadow: var(--ft-shadow);
@@ -201,11 +221,36 @@ def apply_base_styles():
         }}
         .ft-kpi {{
             background: var(--ft-surface);
-            border: 1px solid rgba(31, 27, 22, 0.06);
+            border: 1px solid var(--ft-border);
             border-radius: 24px;
             padding: 0.95rem 1rem 0.85rem 1rem;
             box-shadow: var(--ft-shadow);
-            min-height: 170px;
+            min-height: 148px;
+        }}
+        .ft-kpi-head {{
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+        }}
+        .ft-kpi-icon {{
+            width: 1rem;
+            height: 1rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: inherit;
+            opacity: 0.96;
+            flex-shrink: 0;
+        }}
+        .ft-kpi-icon svg {{
+            width: 1rem;
+            height: 1rem;
+            display: block;
+        }}
+        .ft-kpi-icon img {{
+            width: 1rem;
+            height: 1rem;
+            display: block;
         }}
         .ft-kpi-title {{
             color: #7e7064;
@@ -250,15 +295,18 @@ def apply_base_styles():
             width: 100%;
             height: 100%;
         }}
+        .ft-sparkline-placeholder {{
+            opacity: 0.5;
+        }}
         .ft-list {{
             display: grid;
             gap: 0.85rem;
         }}
         .ft-row-card {{
             background: var(--ft-surface);
-            border: 1px solid rgba(31, 27, 22, 0.06);
+            border: 1px solid var(--ft-border);
             border-radius: 24px;
-            padding: 0.95rem 1rem;
+            padding: 0.85rem 0.95rem;
             box-shadow: var(--ft-shadow);
         }}
         .ft-row-top {{
@@ -348,9 +396,9 @@ def apply_base_styles():
         }}
         div[data-testid="stVerticalBlockBorderWrapper"] {{
             border-radius: 26px;
-            border: 1px solid rgba(31, 27, 22, 0.08);
+            border: 1px solid var(--ft-border);
             box-shadow: var(--ft-shadow);
-            background: rgba(255,255,255,0.7);
+            background: var(--ft-surface-soft);
         }}
         div[data-testid="stForm"] {{
             background: transparent;
@@ -360,7 +408,7 @@ def apply_base_styles():
         }}
         div[data-testid="stMetric"] {{
             background: var(--ft-surface);
-            border: 1px solid rgba(31, 27, 22, 0.06);
+            border: 1px solid var(--ft-border);
             border-radius: 20px;
             padding: 0.8rem 0.85rem;
             box-shadow: var(--ft-shadow);
@@ -375,12 +423,18 @@ def apply_base_styles():
         div[data-baseweb="select"] > div,
         textarea {{
             background: rgba(255,255,255,0.88) !important;
-            border: 1px solid rgba(31, 27, 22, 0.06) !important;
+            border: 1px solid rgba(31, 27, 22, 0.08) !important;
             border-radius: 18px !important;
             color: var(--ft-text) !important;
         }}
+        div[data-baseweb="input"] input {{
+            min-height: 3rem !important;
+        }}
         textarea {{
             min-height: 110px !important;
+        }}
+        div[data-baseweb="select"] span {{
+            color: var(--ft-text) !important;
         }}
         .stButton > button,
         .stFormSubmitButton > button {{
@@ -396,10 +450,14 @@ def apply_base_styles():
         .stFormSubmitButton > button:hover {{
             background: #d75d3d;
         }}
+        .stButton > button:focus,
+        .stFormSubmitButton > button:focus {{
+            box-shadow: 0 0 0 3px rgba(226,106,74,0.18) !important;
+        }}
         div[data-testid="stDataFrame"] {{
             border-radius: 22px;
             overflow: hidden;
-            border: 1px solid rgba(31, 27, 22, 0.06);
+            border: 1px solid var(--ft-border);
             box-shadow: var(--ft-shadow);
             background: white;
         }}
@@ -407,32 +465,41 @@ def apply_base_styles():
             border-radius: 18px;
             border: none;
         }}
+        div[data-testid="stHorizontalBlock"] {{
+            gap: 0.9rem;
+        }}
         .ft-note {{
             color: var(--ft-muted);
             font-size: 0.95rem;
+        }}
+        .ft-muted-strong {{
+            color: #8b7d70;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            font-weight: 800;
         }}
         .ft-divider {{
             height: 1px;
             background: rgba(31, 27, 22, 0.08);
             margin: 0.85rem 0;
         }}
-        .ft-top-nav {{
-            display: none !important;
-        }}
-        .ft-top-link {{
-            text-decoration: none;
-            color: #6f6257;
-            background: rgba(255,255,255,0.76);
-            border: 1px solid rgba(31, 27, 22, 0.07);
-            border-radius: 999px;
-            padding: 0.56rem 0.92rem;
-            font-weight: 700;
-            font-size: 0.94rem;
-        }}
-        .ft-top-link.active {{
-            background: var(--ft-primary);
-            color: white;
-            box-shadow: 0 10px 25px rgba(226, 106, 74, 0.28);
+        .ft-nav-mobile {{
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 0.35rem;
+            position: fixed;
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(408px, calc(100vw - 1rem));
+            bottom: 0.45rem;
+            z-index: 999;
+            padding: 0.5rem 0.42rem 0.62rem;
+            border-radius: 26px;
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(31, 27, 22, 0.06);
+            box-shadow: 0 10px 24px rgba(58, 40, 20, 0.10);
         }}
         .ft-quick-card {{
             display:flex;
@@ -456,6 +523,201 @@ def apply_base_styles():
             font-size:1.15rem;
             font-weight:700;
             margin-left:auto;
+        }}
+        .ft-toolbar {{
+            display: flex;
+            align-items: end;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }}
+        .ft-toolbar-actions {{
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.65rem;
+            flex-wrap: wrap;
+        }}
+        .ft-empty {{
+            text-align: left;
+            padding: 1.15rem 1.1rem;
+        }}
+        .ft-empty strong {{
+            display: block;
+            font-size: 1.05rem;
+            margin-bottom: 0.22rem;
+        }}
+        .ft-panel-title {{
+            font-size: 1.55rem;
+            line-height: 1;
+            letter-spacing: -0.04em;
+            font-weight: 800;
+            margin: 0 0 0.95rem 0;
+        }}
+        .ft-inline-count {{
+            color: var(--ft-muted);
+            font-size: 0.95rem;
+            margin: -0.12rem 0 0.95rem 0;
+        }}
+        .ft-action-row {{
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.7rem;
+            margin-bottom: 1rem;
+        }}
+        .ft-action-row .full-width {{
+            grid-column: 1 / -1;
+        }}
+        .ft-action-link {{
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            text-decoration: none;
+            border-radius: 24px;
+            padding: 0.95rem 1rem;
+            background: var(--ft-surface);
+            border: 1px solid var(--ft-border);
+            box-shadow: var(--ft-shadow);
+            color: var(--ft-text);
+        }}
+        .ft-action-link.primary {{
+            background: linear-gradient(180deg, #ee7552 0%, #e26a4a 100%);
+            color: white;
+            border-color: rgba(226,106,74,0.22);
+            box-shadow: 0 12px 28px rgba(226,106,74,0.22);
+        }}
+        .ft-action-link.primary .ft-note {{
+            color: rgba(255,247,244,0.82);
+        }}
+        .ft-action-link-icon {{
+            width: 2.7rem;
+            height: 2.7rem;
+            border-radius: 0.95rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            background: rgba(255,255,255,0.78);
+            color: var(--ft-primary);
+        }}
+        .ft-action-link.primary .ft-action-link-icon {{
+            background: rgba(255,255,255,0.18);
+            color: white;
+        }}
+        .ft-action-link-icon svg {{
+            width: 1.2rem;
+            height: 1.2rem;
+            display: block;
+        }}
+        .ft-action-link-icon img {{
+            width: 1.2rem;
+            height: 1.2rem;
+            display: block;
+        }}
+        .ft-action-link-title {{
+            font-size: 1rem;
+            font-weight: 800;
+            line-height: 1.05;
+        }}
+        .ft-mini-stats {{
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.7rem;
+            margin-bottom: 1rem;
+        }}
+        .ft-mini-stat {{
+            background: var(--ft-surface);
+            border: 1px solid var(--ft-border);
+            border-radius: 22px;
+            padding: 0.9rem 1rem;
+            box-shadow: var(--ft-shadow);
+        }}
+        .ft-mini-stat-value {{
+            font-size: 1.9rem;
+            line-height: 1;
+            letter-spacing: -0.04em;
+            font-weight: 800;
+            color: var(--ft-text);
+        }}
+        .ft-nav-mobile a {{
+            text-decoration: none;
+            color: #7a6d60;
+            padding: 0.34rem 0.15rem 0;
+            text-align: center;
+            border-radius: 18px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            line-height: 1.08;
+            min-height: 3.25rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.18rem;
+        }}
+        .ft-nav-mobile a.active {{
+            color: var(--ft-primary);
+        }}
+        .ft-nav-mobile .ft-nav-ico {{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.9rem;
+            height: 1.9rem;
+            border-radius: 999px;
+            background: rgba(31, 27, 22, 0.055);
+        }}
+        .ft-nav-mobile a.active .ft-nav-ico {{
+            background: rgba(226, 106, 74, 0.12);
+        }}
+        .ft-nav-mobile .ft-nav-ico svg {{
+            width: 1.1rem;
+            height: 1.1rem;
+            display: block;
+        }}
+        .ft-nav-mobile .ft-nav-ico img {{
+            width: 1.1rem;
+            height: 1.1rem;
+            display: block;
+        }}
+        .ft-nav-mobile .ft-nav-fab {{
+            width: 3.05rem;
+            height: 3.05rem;
+            min-height: auto;
+            margin-top: -1.45rem;
+            border-radius: 999px;
+            background: var(--ft-primary);
+            color: white;
+            box-shadow: 0 8px 20px rgba(226, 106, 74, 0.24);
+            gap: 0;
+            padding: 0;
+        }}
+        .ft-nav-mobile .ft-nav-fab.active {{
+            color: white;
+        }}
+        .ft-nav-mobile .ft-nav-fab .ft-nav-ico {{
+            width: 100%;
+            height: 100%;
+            background: transparent;
+        }}
+        .ft-nav-mobile .ft-nav-fab .ft-nav-ico svg {{
+            width: 1.3rem;
+            height: 1.3rem;
+        }}
+        @media (max-width: 768px) {{
+            .ft-action-row {{
+                grid-template-columns: 1fr;
+            }}
+            .ft-toolbar {{
+                display: block;
+            }}
+            .ft-toolbar-actions {{
+                margin-top: 0.85rem;
+                justify-content: stretch;
+            }}
+            .ft-toolbar-actions .stButton {{
+                flex: 1 1 100%;
+            }}
         }}
         </style>
         """
@@ -504,7 +766,11 @@ def render_card(title: str, body: str):
 
 def _sparkline_svg(values: list[float], color: str) -> str:
     if not values:
-        return ""
+        values = [0.0, 0.0, 0.0]
+        color = "#D6CEC3"
+        placeholder_class = "ft-sparkline-placeholder"
+    else:
+        placeholder_class = ""
     if len(values) == 1:
         values = [values[0], values[0]]
     min_v = min(values)
@@ -516,23 +782,29 @@ def _sparkline_svg(values: list[float], color: str) -> str:
         y = 30 - ((value - min_v) / spread) * 22
         coords.append(f"{x:.1f},{y:.1f}")
     polyline = " ".join(coords)
+    area = "0,34 " + polyline + " 100,34"
+    svg_markup = f"""
+    <svg viewBox="0 0 100 34" preserveAspectRatio="none">
+        <polygon fill="{color}20" points="{area}"></polygon>
+        <polyline fill="none" stroke="{color}" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" points="{polyline}"></polyline>
+    </svg>
+    """
     return _html(f"""
-    <div class="ft-sparkline">
-        <svg viewBox="0 0 100 34" preserveAspectRatio="none">
-            <polyline fill="none" stroke="{color}" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" points="{polyline}"></polyline>
-        </svg>
+    <div class="ft-sparkline {placeholder_class}">
+        <img alt="" src="{_svg_to_data_uri(svg_markup)}" style="width:100%; height:100%; display:block;" />
     </div>
     """)
 
 
-def render_metric_card(title: str, value: str, delta: str | None = None, color: str = PRIMARY, suffix: str | None = None, sparkline: list[float] | None = None):
+def render_metric_card(title: str, value: str, delta: str | None = None, color: str = PRIMARY, suffix: str | None = None, sparkline: list[float] | None = None, icon_html: str | None = None):
     suffix_html = f'<span class="ft-kpi-suffix"> {escape(suffix)}</span>' if suffix else ""
     delta_class = "ft-delta" if delta else "ft-delta ft-delta-muted"
     delta_text = escape(delta) if delta else "Sin comparativa"
+    icon_block = f'<span class="ft-kpi-icon">{icon_html}</span>' if icon_html else ""
     render_html(
         f"""
         <div class="ft-kpi">
-            <div class="ft-kpi-title">{escape(title)}</div>
+            <div class="ft-kpi-head">{icon_block}<div class="ft-kpi-title">{escape(title)}</div></div>
             <div class="ft-kpi-value">{escape(value)}{suffix_html}</div>
             <div class="{delta_class}">{delta_text}</div>
             {_sparkline_svg(sparkline or [], color)}
@@ -651,29 +923,77 @@ def render_distribution_bar(items: list[tuple[str, float]], total_label: str):
     )
 
 
-def render_navigation(current_view: str) -> str:
-    options = [
-        ("principal", "Principal"),
-        ("nuevo", "Nuevo entrenamiento"),
-        ("historial", "Historial"),
-        ("ejercicios", "Ejercicios"),
-        ("progresion", "Progresión"),
-        ("peso", "Peso corporal"),
-        ("mas", "Más"),
-        ("configuracion", "Configuración"),
-    ]
-    keys = [key for key, _ in options]
-    labels = [label for _, label in options]
-    current_key = current_view if current_view in keys else "principal"
-    current_index = keys.index(current_key)
+def render_empty_state(title: str, message: str):
+    render_html(
+        f"""
+        <div class="ft-card ft-empty">
+            <strong>{escape(title)}</strong>
+            <div class="ft-note">{escape(message)}</div>
+        </div>
+        """
+    )
 
-    with st.container(border=True):
-        st.markdown("### Menú")
-        selected_label = st.selectbox(
-            "Ir a",
-            labels,
-            index=current_index,
-            key=f"app_nav_value_{current_key}",
-            label_visibility="collapsed",
+
+def render_inline_count(text: str):
+    render_html(f'<div class="ft-inline-count">{escape(text)}</div>')
+
+
+def render_action_links(items: list[dict]):
+    blocks = []
+    for item in items:
+        tone_class = "primary" if item.get("primary") else ""
+        width_class = "full-width" if item.get("full_width") else ""
+        blocks.append(
+            f"""
+            <a href="?view={escape(item['view'])}" target="_self" class="ft-action-link {tone_class} {width_class}">
+                <div class="ft-action-link-icon">{item["icon_html"]}</div>
+                <div style="min-width:0;">
+                    <div class="ft-action-link-title">{escape(item["title"])}</div>
+                    <div class="ft-note" style="margin-top:0.16rem;">{escape(item["subtitle"])}</div>
+                </div>
+            </a>
+            """
         )
-    return keys[labels.index(selected_label)]
+    render_html(f'<div class="ft-action-row">{"".join(blocks)}</div>')
+
+
+def render_mini_stats(items: list[dict]):
+    blocks = []
+    for item in items:
+        blocks.append(
+            f"""
+            <div class="ft-mini-stat">
+                <div class="ft-kicker" style="font-size:0.7rem; margin-bottom:0.2rem;">{escape(item["label"])}</div>
+                <div class="ft-mini-stat-value">{escape(item["value"])}</div>
+                <div class="ft-note" style="margin-top:0.18rem;">{escape(item["subtitle"])}</div>
+            </div>
+            """
+        )
+    render_html(f'<div class="ft-mini-stats">{"".join(blocks)}</div>')
+
+
+def render_mobile_navigation(current_view: str):
+    inactive = "#7A6D60"
+    active = PRIMARY
+    items = [
+        ("principal", "Resumen", "home"),
+        ("historial", "Historial", "list"),
+        ("nuevo", "", "plus"),
+        ("progresion", "Progresión", "chart"),
+        ("mas", "Más", "more"),
+    ]
+    links = []
+    for key, label, icon_name in items:
+        active_class = "active" if key == current_view else ""
+        extra_class = "ft-nav-fab" if key == "nuevo" else ""
+        icon_color = "#FFFFFF" if key == "nuevo" else (active if key == current_view else inactive)
+        icon = icon_svg(icon_name, size=18 if key != "nuevo" else 20, color=icon_color)
+        links.append(
+            f'''
+            <a href="?view={key}" target="_self" class="{active_class} {extra_class}">
+                <span class="ft-nav-ico">{icon}</span>
+                {f"<span>{escape(label)}</span>" if label else ""}
+            </a>
+            '''
+        )
+    render_html(f'<nav class="ft-nav-mobile">{"".join(links)}</nav>')

@@ -5,10 +5,10 @@ import pandas as pd
 
 from src.charts import plot_body_weight
 from src.services import add_body_weight, get_body_weight_entries
-from src.ui import render_html, render_page_header, render_section_label
+from src.ui import render_empty_state, render_html, render_inline_count, render_page_header, render_section_label
 from src.utils import format_date
 
-render_page_header("Peso corporal", "Sigue la tendencia de tu peso y registra nuevas entradas cuando lo necesites.")
+render_page_header("Peso corporal", "Sigue tu tendencia y registra nuevas entradas cuando lo necesites.")
 
 if "show_weight_form" not in st.session_state:
     st.session_state.show_weight_form = False
@@ -45,15 +45,10 @@ except Exception as exc:
     st.stop()
 
 if not entries:
-    render_html(
-        """
-        <div class="ft-card" style="padding:1.1rem 1.05rem;">
-            <div class="ft-row-title">Todavía no hay registros</div>
-            <div class="ft-note" style="margin-top:0.25rem;">Guarda tu primer peso para empezar a ver la tendencia.</div>
-        </div>
-        """
-    )
+    render_empty_state("Todavía no hay registros", "Guarda tu primer peso para empezar a ver la tendencia.")
     st.stop()
+
+render_inline_count(f"{len(entries)} registros guardados")
 
 entries_df = pd.DataFrame(entries)
 entries_df["entry_date"] = pd.to_datetime(entries_df["entry_date"])

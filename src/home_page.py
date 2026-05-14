@@ -14,8 +14,11 @@ from src.ui import (
     SUCCESS,
     TRAINING_TYPE_COLORS,
     icon_svg,
+    render_action_links,
     render_distribution_bar,
+    render_empty_state,
     render_html,
+    render_inline_count,
     render_workout_list_card,
     render_metric_card,
     render_page_header,
@@ -73,7 +76,7 @@ def render():
         st.error(f"No se pudo cargar el resumen inicial: {exc}")
 
     render_page_header(
-        "Fitness Tracker",
+        "Resumen",
         f'{_weekday_label()} · {summary.get("workouts_this_week", 0)} entrenamientos esta semana',
     )
 
@@ -82,6 +85,7 @@ def render():
     weight_values = [float(item.get("weight") or 0) for item in reversed(body_weights[:6])]
     volume_values = _sparkline_values(recent_workouts, "total_volume")
     workout_count_values = list(range(max(1, len(recent_workouts) - 3), len(recent_workouts) + 1))
+    exercise_sparkline = [max(1, summary.get("total_exercises", 0) - 2), max(1, summary.get("total_exercises", 0) - 1), max(1, summary.get("total_exercises", 0))]
 
     grid1, grid2 = st.columns(2)
     with grid1:
@@ -91,6 +95,7 @@ def render():
             delta=f'+{summary.get("workouts_this_week", 0)} últ. 7d',
             color=PRIMARY,
             sparkline=workout_count_values,
+            icon_html=icon_svg("exercise", size=16, color=PRIMARY),
         )
     with grid2:
         render_metric_card(
@@ -99,6 +104,7 @@ def render():
             delta="kg·rep",
             color="#7B5CD6",
             sparkline=volume_values,
+            icon_html=icon_svg("chart", size=16, color="#7B5CD6"),
         )
 
     grid3, grid4 = st.columns(2)
@@ -110,6 +116,7 @@ def render():
             color="#3A82C4",
             suffix="kg" if last_weight else None,
             sparkline=weight_values,
+            icon_html=icon_svg("weight", size=21, color="#3A82C4"),
         )
     with grid4:
         render_metric_card(
@@ -117,8 +124,34 @@ def render():
             str(summary.get("total_exercises", 0)),
             delta="catálogo",
             color=SUCCESS,
-            sparkline=[max(1, summary.get("total_exercises", 0) - 2), summary.get("total_exercises", 0)],
+            sparkline=exercise_sparkline,
+            icon_html=icon_svg("exercise", size=16, color=SUCCESS),
         )
+
+    render_action_links(
+        [
+            {
+                "title": "Empezar entrenamiento",
+                "subtitle": "Registrar una nueva sesión",
+                "view": "nuevo",
+                "icon_html": icon_svg("exercise", size=20, color="#FFFFFF"),
+                "primary": True,
+                "full_width": True,
+            },
+            {
+                "title": "Registrar peso",
+                "subtitle": "Añadir un registro",
+                "view": "peso",
+                "icon_html": icon_svg("weight", size=20, color="#3A82C4"),
+            },
+            {
+                "title": "Ver progreso",
+                "subtitle": "Revisar evolución",
+                "view": "progresion",
+                "icon_html": icon_svg("chart", size=20, color="#7B5CD6"),
+            },
+        ]
+    )
 
     if last_workout_detail:
         render_section_label("Último entrenamiento")
@@ -142,6 +175,9 @@ def render():
             </div>
             """
         )
+    else:
+        render_section_label("Último entrenamiento")
+        render_empty_state("Sin sesiones recientes", "Empieza un entrenamiento nuevo para tener aquí tu último resumen.")
 
     distribution = _distribution_from_history(history_rows)
     if distribution:
@@ -152,23 +188,24 @@ def render():
     quick1, quick2 = st.columns(2)
     with quick1:
         render_quick_action_card(
-            "Registrar peso",
-            "Añadir registro",
-            "#3A82C4",
-            icon_svg("weight", size=20, color="#3A82C4"),
-            "peso",
-        )
-    with quick2:
-        render_quick_action_card(
-            "Nuevo ejercicio",
-            "Crear en catálogo",
+            "Ejercicios",
+            "Gestionar catálogo",
             SUCCESS,
             icon_svg("exercise", size=20, color=SUCCESS),
             "ejercicios",
         )
+    with quick2:
+        render_quick_action_card(
+            "Más opciones",
+            "Peso, progreso y ajustes",
+            PRIMARY,
+            icon_svg("more", size=20, color=PRIMARY),
+            "mas",
+        )
 
     if history_rows:
         render_section_label("Últimas sesiones")
+        render_inline_count(f"{len(history_rows[:3])} sesiones recientes")
         for row in history_rows[:3]:
             workout_date = row.get("workout_date")
             day = str(pd.to_datetime(workout_date).day).zfill(2) if workout_date else "—"
@@ -187,3 +224,6 @@ def render():
                 right_subtitle=f'{float(row.get("total_volume") or 0):.0f} vol',
                 subtitle=row.get("exercise_names") or None,
             )
+    else:
+        render_section_label("Últimas sesiones")
+        render_empty_state("Todavía no hay sesiones", "Cuando registres entrenamientos aparecerán aquí para repasarlos rápido.")

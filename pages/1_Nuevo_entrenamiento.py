@@ -14,8 +14,8 @@ from src.services import (
     get_training_types,
     get_workout_detail,
 )
-from src.ui import render_html, render_page_header, render_section_label, render_type_pills, type_color
-from src.utils import safe_float, safe_int, validate_set_data
+from src.ui import render_empty_state, render_html, render_inline_count, render_page_header, render_section_label, render_type_pills, type_color
+from src.utils import build_unique_name_map, safe_float, safe_int, validate_set_data
 
 
 try:
@@ -28,8 +28,7 @@ except Exception as exc:
 
 training_type_map = {item["name"]: item["id"] for item in training_types}
 training_type_by_id = {item["id"]: item["name"] for item in training_types}
-exercise_map = {item["name"]: item["id"] for item in exercises}
-exercise_rows_by_name = {item["name"]: item for item in exercises}
+exercise_map, exercise_rows_by_name = build_unique_name_map(exercises)
 recent_workout_options = {f'{item["workout_date"]} - {item["name"]}': item["id"] for item in recent_workouts}
 
 if "active_workout_id" not in st.session_state:
@@ -100,14 +99,14 @@ def _exercise_card(item: dict):
 
 
 if not st.session_state.active_workout_id:
-    render_page_header("Nuevo entrenamiento")
+    render_page_header("Nuevo entrenamiento", "Crea una sesión nueva o retoma una reciente para no perder el ritmo.")
 
     with st.container(border=True):
         with st.form("create_workout_form"):
             workout_name = st.text_input(
                 "Nombre del entrenamiento",
                 value=st.session_state.suggested_workout_name,
-                placeholder="Nombre del entrenamiento",
+                placeholder="Ej. Pierna fuerza o Empuje",
             )
             workout_date = st.date_input("Fecha", value=date.today())
             workout_notes = st.text_area("Notas", placeholder="Añadir notas")
@@ -127,15 +126,18 @@ if not st.session_state.active_workout_id:
                     st.error(f"No se pudo crear el entrenamiento: {exc}")
 
     render_section_label("Continuar uno reciente")
-    with st.container(border=True):
-        selected_recent_label = st.selectbox("Entrenamientos recientes", ["Selecciona uno"] + list(recent_workout_options.keys()))
-        if st.button("Continuar", use_container_width=True):
-            if selected_recent_label == "Selecciona uno":
-                st.warning("Selecciona un entrenamiento reciente.")
-            else:
-                st.session_state.active_workout_id = recent_workout_options[selected_recent_label]
-                st.session_state.active_workout_name = selected_recent_label.split(" - ", 1)[1]
-                st.rerun()
+    if not recent_workout_options:
+        render_empty_state("Sin sesiones recientes", "Cuando tengas entrenamientos previos podrás retomarlos desde aquí.")
+    else:
+        with st.container(border=True):
+            selected_recent_label = st.selectbox("Entrenamientos recientes", ["Selecciona uno"] + list(recent_workout_options.keys()))
+            if st.button("Continuar", use_container_width=True):
+                if selected_recent_label == "Selecciona uno":
+                    st.warning("Selecciona un entrenamiento reciente.")
+                else:
+                    st.session_state.active_workout_id = recent_workout_options[selected_recent_label]
+                    st.session_state.active_workout_name = selected_recent_label.split(" - ", 1)[1]
+                    st.rerun()
     st.stop()
 
 detail = get_workout_detail(st.session_state.active_workout_id)
@@ -154,7 +156,7 @@ with actions_1:
     if st.button("Importar reciente", use_container_width=True):
         st.session_state.show_import_box = not st.session_state.get("show_import_box", False)
 with actions_2:
-    if st.button("Cerrar sesión", use_container_width=True):
+    if st.button("Cerrar entrenamiento", use_container_width=True):
         st.session_state.active_workout_id = None
         st.session_state.active_workout_name = ""
         st.rerun()
@@ -179,8 +181,11 @@ if st.session_state.get("show_import_box"):
                     st.error(f"No se pudieron importar los ejercicios: {exc}")
 
 render_section_label("Añadir ejercicio")
+if not exercise_map:
+    render_empty_state("Sin catálogo todavía", "Primero crea ejercicios en la pantalla de Ejercicios para poder añadirlos a la sesión.")
+    st.stop()
+
 with st.container(border=True):
-    default_name = next(iter(exercise_map.keys()), None)
     selected_exercise_name = st.selectbox("Ejercicio", list(exercise_map.keys()) if exercise_map else ["No hay ejercicios"], disabled=not exercise_map)
 
     default_type_name = "Otro"
@@ -277,14 +282,9 @@ if add_submit:
 
 render_section_label("Ejercicios añadidos")
 if not detail.get("workout_exercises"):
-    render_html(
-        """
-        <div class="ft-card" style="text-align:center; padding:1.2rem 1rem;">
-            <div class="ft-note">Aún no has añadido ejercicios a esta sesión.</div>
-        </div>
-        """
-    )
+    render_empty_state("Sesión vacía", "Aún no has añadido ejercicios a esta sesión.")
 else:
+    render_inline_count(f"{len(detail['workout_exercises'])} ejercicios en esta sesión")
     for item in detail["workout_exercises"]:
         _exercise_card(item)
         action1, action2 = st.columns(2)

@@ -1,9 +1,9 @@
 import streamlit as st
 
 from src.services import create_exercise, get_exercises, get_training_types, get_workout_history_summary
-from src.ui import render_html, render_page_header, render_section_label, render_type_pills, type_color
+from src.ui import render_empty_state, render_html, render_inline_count, render_page_header, render_section_label, render_type_pills, type_color
 
-render_page_header("Ejercicios", "Crea tu biblioteca base y asigna un tipo por defecto solo si te ayuda a organizarte.")
+render_page_header("Ejercicios", "Tu catálogo base para trabajar rápido cada día.")
 
 try:
     training_types = get_training_types()
@@ -16,7 +16,7 @@ training_type_options = {"Sin tipo por defecto": None}
 training_type_options.update({item["name"]: item["id"] for item in training_types})
 
 if "show_create_exercise" not in st.session_state:
-    st.session_state.show_create_exercise = True
+    st.session_state.show_create_exercise = False
 
 top_left, top_right = st.columns([3, 2])
 with top_right:
@@ -48,10 +48,13 @@ if st.session_state.show_create_exercise:
                 st.error(f"No se pudo crear el ejercicio: {exc}")
 
 render_section_label("Catálogo")
-search_term = st.text_input("Buscar ejercicio", placeholder="Buscar ejercicio")
-filter_options = {"Todos": "__all__", "Sin tipo por defecto": "__none__"}
-filter_options.update({item["name"]: item["id"] for item in training_types})
-selected_filter_name = st.selectbox("Filtrar por tipo por defecto", list(filter_options.keys()))
+search_col, filter_col = st.columns(2)
+with search_col:
+    search_term = st.text_input("Buscar ejercicio", placeholder="Buscar ejercicio")
+with filter_col:
+    filter_options = {"Todos": "__all__", "Sin tipo por defecto": "__none__"}
+    filter_options.update({item["name"]: item["id"] for item in training_types})
+    selected_filter_name = st.selectbox("Filtrar por tipo por defecto", list(filter_options.keys()))
 
 try:
     filter_value = filter_options[selected_filter_name]
@@ -65,8 +68,10 @@ if search_term.strip():
     exercises = [item for item in exercises if query in item["name"].lower()]
 
 if not exercises:
-    st.warning("No hay ejercicios que coincidan con ese filtro.")
+    render_empty_state("Sin resultados", "No hay ejercicios que coincidan con ese filtro.")
     st.stop()
+
+render_inline_count(f"{len(exercises)} ejercicios visibles")
 
 usage_counts = {}
 for row in workout_history:
@@ -79,7 +84,7 @@ for item in exercises:
     pills = [type_name] if type_name and type_name != "Sin tipo por defecto" else []
     uses = usage_counts.get(item["name"], 0)
     pills_html = render_type_pills(pills) if pills else '<div class="ft-note" style="margin-top:0.35rem; font-style:italic;">Sin tipo por defecto</div>'
-    notes_html = f'<div class="ft-note" style="margin-top:0.35rem;">{item.get("notes")}</div>' if item.get("notes") else '<div class="ft-note" style="margin-top:0.35rem;">Sin notas</div>'
+    notes_html = f'<div class="ft-note" style="margin-top:0.35rem;">{item.get("notes")}</div>' if item.get("notes") else ""
     usage_html = f'<div class="ft-note" style="margin-top:0.18rem;">{uses} usos</div>' if uses else '<div class="ft-note" style="margin-top:0.18rem;">Aún sin registrar</div>'
     render_html(
         f"""

@@ -2,7 +2,7 @@ import pandas as pd
 import streamlit as st
 
 from src.services import get_training_types, get_workout_detail, get_workout_history_summary
-from src.ui import render_html, render_page_header, render_section_label, render_type_pills, render_workout_list_card
+from src.ui import render_empty_state, render_html, render_inline_count, render_page_header, render_section_label, render_type_pills, render_workout_list_card
 from src.utils import format_date
 
 
@@ -44,7 +44,7 @@ except Exception as exc:
     st.stop()
 
 if not workouts:
-    st.warning("Todavía no hay entrenamientos registrados.")
+    render_empty_state("Todavía no hay entrenamientos", "Registra una sesión para empezar a construir tu historial.")
     st.stop()
 
 type_names = ["Todos"] + [item["name"] for item in training_types]
@@ -64,8 +64,10 @@ if search_term.strip():
     ]
 
 if not filtered:
-    st.warning("No hay sesiones que coincidan con esos filtros.")
+    render_empty_state("Sin coincidencias", "No hay sesiones que encajen con esos filtros.")
     st.stop()
+
+render_inline_count(f"{len(filtered)} sesiones visibles")
 
 sections = {}
 for item in filtered:
@@ -107,7 +109,7 @@ render_html(
 )
 
 if not workout_detail.get("workout_exercises"):
-    st.warning("Este entrenamiento no tiene ejercicios asociados todavía.")
+    render_empty_state("Entrenamiento vacío", "Este entrenamiento no tiene ejercicios asociados todavía.")
     st.stop()
 
 metric_1, metric_2, metric_3 = st.columns(3)

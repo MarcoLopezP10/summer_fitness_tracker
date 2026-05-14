@@ -4,14 +4,14 @@ import runpy
 import streamlit as st
 
 from src.home_page import render as render_home
-from src.ui import apply_base_styles, render_navigation
+from src.ui import apply_base_styles, render_mobile_navigation
 
 
 st.set_page_config(
     page_title="Fitness Tracker",
     page_icon="🏋️",
-    layout="centered",
-    initial_sidebar_state="expanded",
+    layout="wide",
+    initial_sidebar_state="collapsed",
 )
 
 
@@ -45,17 +45,10 @@ if current_view not in PAGE_MAP:
 
 apply_base_styles()
 
-nav_view = "mas" if current_view == "configuracion" else current_view
-nav_col, content_col = st.columns([1.15, 4], gap="large")
+nav_view = "mas" if current_view in {"configuracion", "ejercicios", "peso"} else current_view
+render_mobile_navigation(nav_view)
 
-with nav_col:
-    selected_view = render_navigation(nav_view)
-    if selected_view != nav_view:
-        st.query_params["view"] = selected_view
-        st.rerun()
-
-with content_col:
-    if current_view == "principal":
-        render_home()
-    else:
-        runpy.run_path(str(PAGE_MAP[current_view]), run_name="__main__")
+if current_view == "principal":
+    render_home()
+else:
+    runpy.run_path(str(PAGE_MAP[current_view]), run_name="__main__")

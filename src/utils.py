@@ -98,3 +98,18 @@ def build_progress_dataframe(progress_rows: list[dict]) -> pd.DataFrame:
             df[column] = pd.to_numeric(df[column], errors="coerce")
 
     return df
+
+
+def build_unique_name_map(rows: list[dict], *, name_key: str = "name", id_key: str = "id") -> tuple[dict[str, str], dict[str, dict]]:
+    seen: dict[str, int] = {}
+    option_map: dict[str, str] = {}
+    row_map: dict[str, dict] = {}
+
+    for row in rows:
+        base_name = str(row.get(name_key) or "Sin nombre").strip()
+        seen[base_name] = seen.get(base_name, 0) + 1
+        label = base_name if seen[base_name] == 1 else f"{base_name} ({seen[base_name]})"
+        option_map[label] = row[id_key]
+        row_map[label] = row
+
+    return option_map, row_map

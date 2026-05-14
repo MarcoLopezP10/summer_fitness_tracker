@@ -2,7 +2,7 @@ import streamlit as st
 
 from src.auth import auth_enabled, logout
 from src.services import get_body_weight_entries, get_dashboard_summary, get_training_types, get_workout_history_summary
-from src.ui import icon_svg, render_html, render_page_header, render_quick_action_card, render_section_label, type_color
+from src.ui import icon_svg, render_mini_stats, render_html, render_page_header, render_quick_action_card, render_section_label, type_color
 
 summary = {}
 training_types = []
@@ -28,7 +28,7 @@ total_series = sum(item.get("total_sets", 0) for item in history)
 
 def _project_card():
     render_html(
-        """
+        f"""
         <div class="ft-card">
             <div style="display:flex; gap:0.9rem; align-items:flex-start;">
                 <div style="width:56px; height:56px; border-radius:18px; background:#fce8e1; display:flex; align-items:center; justify-content:center; color:#E26A4A;">
@@ -93,6 +93,14 @@ def _settings_detail():
 def _more_hub():
     render_page_header("Más", f"{total_workouts} entrenamientos · {total_exercises} ejercicios")
 
+    render_mini_stats(
+        [
+            {"label": "Sesiones", "value": str(total_workouts), "subtitle": "registradas"},
+            {"label": "Pesos", "value": str(len(body_weights)), "subtitle": "guardados"},
+        ]
+    )
+
+    render_section_label("Herramientas")
     render_quick_action_card(
         "Ejercicios",
         f"{total_exercises} en catálogo",

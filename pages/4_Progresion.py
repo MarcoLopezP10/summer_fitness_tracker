@@ -9,8 +9,8 @@ from src.charts import (
     plot_exercise_volume,
 )
 from src.services import get_exercise_progress, get_exercise_progress_insights, get_exercises
-from src.ui import render_html, render_page_header, render_section_label
-from src.utils import build_progress_dataframe, format_date
+from src.ui import render_empty_state, render_html, render_inline_count, render_page_header, render_section_label
+from src.utils import build_progress_dataframe, build_unique_name_map, format_date
 
 
 def _stat_card(label: str, value: str, unit: str | None = None, delta: str | None = None, color: str = "#1F1B16"):
@@ -53,11 +53,13 @@ except Exception as exc:
     st.error(f"No se pudieron cargar los ejercicios: {exc}")
     st.stop()
 
+render_page_header("Progresión", "Revisa la evolución real de cada ejercicio y detecta si estás avanzando.")
+
 if not exercises:
-    st.warning("Primero crea ejercicios para revisar progresión.")
+    render_empty_state("Sin ejercicios", "Primero crea ejercicios para revisar su progresión.")
     st.stop()
 
-exercise_options = {item["name"]: item["id"] for item in exercises}
+exercise_options, _exercise_rows_by_label = build_unique_name_map(exercises)
 selected_exercise_name = st.selectbox("Ejercicio", list(exercise_options.keys()))
 
 try:
@@ -69,16 +71,15 @@ except Exception as exc:
 
 progress_df = build_progress_dataframe(progress_rows)
 if progress_df.empty:
-    st.warning("No hay datos de progresión para este ejercicio todavía.")
+    render_empty_state("Sin progresión todavía", "Este ejercicio aún no tiene suficientes datos para mostrar evolución.")
     st.stop()
-
-render_page_header("Progresión", selected_exercise_name)
 
 render_html(
     f"""
     <div class="ft-card" style="padding:0.95rem 1rem;">
         <div class="ft-kicker">Ejercicio</div>
         <div class="ft-row-title" style="font-size:1.5rem;">{selected_exercise_name}</div>
+        <div class="ft-note" style="margin-top:0.3rem;">{len(progress_df)} sesiones registradas para este ejercicio.</div>
     </div>
     """
 )
@@ -132,18 +133,15 @@ has_duration = progress_df["total_duration"].notna().sum() >= 2 if "total_durati
 has_distance = progress_df["total_distance"].notna().sum() >= 2 if "total_distance" in progress_df.columns else False
 
 render_section_label("Gráficas")
+render_inline_count("Las gráficas solo aparecen cuando hay suficientes datos comparables.")
 
 if has_weight:
     _chart_card("Peso máximo por sesión", "Mayor peso levantado en cada entrenamiento")
     st.plotly_chart(plot_exercise_max_weight(progress_df), use_container_width=True, config={"displayModeBar": False, "responsive": True})
-else:
-    st.warning("Registra al menos 2 entrenamientos con esta métrica para ver la gráfica.")
 
 if has_volume:
     _chart_card("Volumen total", "Peso × repeticiones por sesión")
     st.plotly_chart(plot_exercise_volume(progress_df), use_container_width=True, config={"displayModeBar": False, "responsive": True})
-else:
-    st.warning("Registra al menos 2 entrenamientos con esta métrica para ver la gráfica.")
 
 if has_reps:
     _chart_card("Repeticiones", "Repeticiones totales por sesión")
@@ -156,6 +154,9 @@ if has_duration:
 if has_distance:
     _chart_card("Distancia", "Distancia total registrada por sesión")
     st.plotly_chart(plot_exercise_distance(progress_df), use_container_width=True, config={"displayModeBar": False, "responsive": True})
+
+if not any([has_weight, has_volume, has_reps, has_duration, has_distance]):
+    render_empty_state("Sin métricas comparables", "Necesitas al menos dos sesiones con datos repetibles para dibujar gráficas útiles.")
 
 display_df = progress_df.copy()
 display_df["workout_date"] = display_df["workout_date"].apply(format_date)
